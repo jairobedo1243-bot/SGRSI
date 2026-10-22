@@ -67,6 +67,7 @@ $resultado = (new HistorialRepository())->listarDetallado();
                             <td><?= e($fila['descripcionServicio']) ?></td>
                         </tr>
                     <?php endforeach; ?>
+                    <?php if ($resultado === []): ?><tr><td colspan="6" class="empty-state"><?= t('sinRegistros') ?></td></tr><?php endif; ?>
                 </tbody>
             </table>
         </div>

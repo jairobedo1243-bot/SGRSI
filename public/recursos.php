@@ -8,29 +8,30 @@ $auth = new SessionAuth();
 $usuario = $auth->requireLogin();
 $permiso = $auth->requirePageAccess('recursos.php', $usuario);
 $idioma = Translator::currentLanguage();
-$mensaje = '';
 
 $equipos = new EquipoRepository();
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && $permiso['inventarioEditar']) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $tipo = (string)($_POST['tipo'] ?? '');
     $serie = mb_substr(trim((string)($_POST['numeroSerie'] ?? '')), 0, 20);
     $modelo = mb_substr(trim((string)($_POST['modelo'] ?? '')), 0, 20);
     $marca = mb_substr(trim((string)($_POST['marca'] ?? '')), 0, 20);
 
-    if (!csrf_valido()) {
-        $mensaje = 'Solicitud no válida, recargá la página';
+    if (!csrf_valido() || !$permiso['inventarioEditar']) {
+        flash_y_volver(t('msgSolicitudInvalida'), false);
     } elseif ($serie === '' || $modelo === '' || $marca === ''
         || !in_array($tipo, ['PC', 'Laptop', 'Monitor', 'Proyector', 'Television', 'Otro'], true)) {
-        $mensaje = 'Completá todos los campos correctamente';
+        flash_y_volver(t('msgCompletarCampos'), false);
     } else {
         $equipo = new Equipo($serie, $modelo, $marca, $tipo);
-        $mensaje = $equipos->guardar($equipo)
-            ? t('msgEquipoAgregado') . $equipo->getModelo()
-            : 'No se pudo guardar el equipo';
+        if ($equipos->guardar($equipo)) {
+            flash_y_volver(t('msgEquipoAgregado') . $equipo->getModelo(), true);
+        }
+        flash_y_volver(t('msgEquipoNoGuardado'), false);
     }
 }
 
+$flash = flash_tomar();
 $resultado = $equipos->listar();
 ?>
 <!DOCTYPE html>
@@ -77,13 +78,13 @@ $resultado = $equipos->listar();
             <form method="POST">
             <?= csrf_campo() ?>
                 <label for="modeloEquipo"><?= t('labelModelo') ?></label>
-                <input type="text" id="modeloEquipo" name="modelo" placeholder="<?= t('placeholderModelo') ?>" required>
+                <input type="text" id="modeloEquipo" name="modelo" maxlength="20" placeholder="<?= t('placeholderModelo') ?>" required>
 
                 <label for="marcaEquipo"><?= t('labelMarca') ?></label>
-                <input type="text" id="marcaEquipo" name="marca" placeholder="<?= t('placeholderMarca') ?>" required>
+                <input type="text" id="marcaEquipo" name="marca" maxlength="20" placeholder="<?= t('placeholderMarca') ?>" required>
 
                 <label for="numeroSerieEquipo"><?= t('labelNumeroSerie') ?></label>
-                <input type="text" id="numeroSerieEquipo" name="numeroSerie" placeholder="<?= t('placeholderNumeroSerie') ?>" required>
+                <input type="text" id="numeroSerieEquipo" name="numeroSerie" maxlength="20" placeholder="<?= t('placeholderNumeroSerie') ?>" required>
 
                 <label for="tipoEquipo"><?= t('labelTipoEquipo') ?></label>
                 <select id="tipoEquipo" name="tipo" required>
@@ -102,7 +103,7 @@ $resultado = $equipos->listar();
             <p class="mensaje info"><?= t('avisoSoloConsultaInventario') ?></p>
         <?php endif; ?>
 
-        <?php if ($mensaje !== ''): ?><p class="mensaje"><?= e($mensaje) ?></p><?php endif; ?>
+        <?= flash_html($flash) ?>
 
         <div class="tabla-wrapper">
             <table>
@@ -122,6 +123,7 @@ $resultado = $equipos->listar();
                             <td><span class="badge <?= $badgeClase ?>"><?= tv($fila['estado']) ?></span></td>
                         </tr>
                     <?php endforeach; ?>
+                    <?php if ($resultado === []): ?><tr><td colspan="6" class="empty-state"><?= t('sinRegistros') ?></td></tr><?php endif; ?>
                 </tbody>
             </table>
         </div>

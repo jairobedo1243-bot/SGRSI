@@ -52,36 +52,26 @@ $idioma = Translator::currentLanguage();
     </div>
 
     <div class="modulos-grid">
-        <a href="recursos.php" class="modulo-card">
-            <div class="icono"></div>
-            <h3><?= t('navInventario') ?></h3>
-            <p><?= t('moduloInventarioDesc') ?></p>
+        <?php
+        // Solo se muestran los módulos a los que el rol puede entrar.
+        $modulos = [
+            'recursos.php' => ['navInventario', 'moduloInventarioDesc'],
+            'usuarios.php' => ['navUsuarios', 'moduloUsuariosDesc'],
+            'prestamos.php' => ['navPrestamos', 'moduloPrestamosDesc'],
+            'tickets.php' => ['navTickets', 'moduloTicketsDesc'],
+            'reportes.php' => ['navReportes', 'moduloReportesDesc'],
+            'historial.php' => ['navHistorial', 'moduloHistorialDesc'],
+        ];
+        foreach ($modulos as $pagina => [$titulo, $descripcion]):
+            if (!in_array($pagina, $permiso['paginas'], true)) {
+                continue;
+            }
+        ?>
+        <a href="<?= $pagina ?>" class="modulo-card">
+            <h3><?= t($titulo) ?></h3>
+            <p><?= t($descripcion) ?></p>
         </a>
-        <a href="usuarios.php" class="modulo-card">
-            <div class="icono"></div>
-            <h3><?= t('navUsuarios') ?></h3>
-            <p><?= t('moduloUsuariosDesc') ?></p>
-        </a>
-        <a href="prestamos.php" class="modulo-card">
-            <div class="icono"></div>
-            <h3><?= t('navPrestamos') ?></h3>
-            <p><?= t('moduloPrestamosDesc') ?></p>
-        </a>
-        <a href="tickets.php" class="modulo-card">
-            <div class="icono"></div>
-            <h3><?= t('navTickets') ?></h3>
-            <p><?= t('moduloTicketsDesc') ?></p>
-        </a>
-        <a href="reportes.php" class="modulo-card">
-            <div class="icono"></div>
-            <h3><?= t('navReportes') ?></h3>
-            <p><?= t('moduloReportesDesc') ?></p>
-        </a>
-        <a href="historial.php" class="modulo-card">
-            <div class="icono"></div>
-            <h3><?= t('navHistorial') ?></h3>
-            <p><?= t('moduloHistorialDesc') ?></p>
-        </a>
+        <?php endforeach; ?>
     </div>
 </main>
 

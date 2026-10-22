@@ -7,7 +7,7 @@
 //
 // Cómo se usa:
 //   1. Abrir en el navegador:
-//        http://localhost/mi-proyecto/public/generar_hash.php
+//        http://localhost/generar_hash.php  (o http://localhost/SGRSI/public/generar_hash.php)
 //   2. Escribir la contraseña que querés y apretar "Generar".
 //   3. Copiar el hash y pegarlo en la columna "contrasena".
 //
@@ -83,8 +83,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 <table>
                     <tbody>
                         <tr><td style="font-family:monospace;font-size:0.78rem;word-break:break-all;">
-INSERT INTO usuario (nom, ape, email, contrasena, rol) VALUES
-('Nombre', 'Apellido', 'correo@utu.edu.uy', '<?= htmlspecialchars($hash) ?>', 'Docente');
+INSERT INTO usuario (ci_usuario, nom, ape, email, contrasena, rol) VALUES
+(12345672, 'Nombre', 'Apellido', 'correo@utu.edu.uy', '<?= htmlspecialchars($hash) ?>', 'Solicitante');
                         </td></tr>
                     </tbody>
                 </table>

@@ -35,7 +35,8 @@ class Usuario
         }
 
         $ci = (int)preg_replace('/[^0-9]/', '', $cedula);
-        $partes = explode(' ', $nombreCompleto, 2);
+        // Separa nombre y apellido aunque haya varios espacios entre las palabras.
+        $partes = preg_split('/\s+/u', trim($nombreCompleto), 2) ?: [''];
 
         // La base guarda máximo 20 letras en nombre y apellido.
         return new self($ci, mb_substr($partes[0], 0, 20), mb_substr($partes[1] ?? '', 0, 20), $email, $rol);

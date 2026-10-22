@@ -16,34 +16,32 @@ class PrestamoServicio
     /** Registra el préstamo y deja el equipo como "Prestado". */
     public function registrar(Prestamo $prestamo): bool
     {
-        // Solo se presta un equipo que realmente está disponible.
-        if ($this->equipos->obtenerEstado($prestamo->getIdEquipo()) !== 'Disponible') {
+        // Primero se "reserva" el equipo: solo funciona si sigue Disponible.
+        if (!$this->equipos->marcarPrestadoSiDisponible($prestamo->getIdEquipo())) {
             return false;
         }
 
         if (!$this->prestamos->guardar($prestamo)) {
+            // No se pudo guardar el préstamo: el equipo vuelve a quedar libre.
+            $this->equipos->cambiarEstado($prestamo->getIdEquipo(), 'Disponible');
             return false;
         }
 
-        $this->equipos->cambiarEstado($prestamo->getIdEquipo(), 'Prestado');
         return true;
     }
 
     /** Marca el préstamo como devuelto y el equipo vuelve a "Disponible". */
     public function devolver(int $idPrestamo): bool
     {
-        // Si el préstamo ya fue devuelto no se toca el equipo (podría estar prestado a otra persona).
-        if (!$this->prestamos->estaEntregado($idPrestamo)) {
+        $idEquipo = $this->prestamos->obtenerIdEquipo($idPrestamo);
+
+        // Si el préstamo no existe o ya fue devuelto no se toca el equipo
+        // (podría estar prestado a otra persona).
+        if ($idEquipo === null || !$this->prestamos->marcarDevuelto($idPrestamo)) {
             return false;
         }
 
-        $idEquipo = $this->prestamos->obtenerIdEquipo($idPrestamo);
-        $this->prestamos->marcarDevuelto($idPrestamo);
-
-        if ($idEquipo !== null) {
-            $this->equipos->cambiarEstado($idEquipo, 'Disponible');
-        }
-
+        $this->equipos->cambiarEstado($idEquipo, 'Disponible');
         return true;
     }
 }

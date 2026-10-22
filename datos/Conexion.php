@@ -14,10 +14,14 @@ class Conexion
             return self::$connection;
         }
 
-        $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
-        if ($connection->connect_error) {
-            error_log('Error de conexión: ' . $connection->connect_error);
-            throw new RuntimeException('No se pudo conectar a la base de datos');
+        // Mismo comportamiento en PHP 8.0 y 8.1+: los errores de MySQL lanzan excepción.
+        mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+
+        try {
+            $connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME, (int)DB_PORT);
+        } catch (mysqli_sql_exception $e) {
+            error_log('Error de conexión: ' . $e->getMessage());
+            throw new RuntimeException('No se pudo conectar a la base de datos', 0, $e);
         }
 
         $connection->set_charset('utf8mb4');
@@ -29,10 +33,6 @@ class Conexion
     public static function select(string $sql, array $params = []): array
     {
         $stmt = self::prepare($sql, $params);
-        if ($stmt === null) {
-            return [];
-        }
-
         $stmt->execute();
         $result = $stmt->get_result();
         $rows = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
@@ -44,10 +44,6 @@ class Conexion
     public static function selectOne(string $sql, array $params = []): ?array
     {
         $stmt = self::prepare($sql, $params);
-        if ($stmt === null) {
-            return null;
-        }
-
         $stmt->execute();
         $result = $stmt->get_result();
         $row = $result ? $result->fetch_assoc() : null;
@@ -68,29 +64,32 @@ class Conexion
 
     public static function execute(string $sql, array $params = []): bool
     {
-        $stmt = self::prepare($sql, $params);
-        if ($stmt === null) {
-            return false;
-        }
+        return self::filasAfectadas($sql, $params) >= 0;
+    }
 
-        // Si la base rechaza la operación (dato repetido, clave foránea, etc.) devolvemos false.
+    /**
+     * Ejecuta un INSERT/UPDATE/DELETE y devuelve cuántas filas cambió.
+     * Devuelve -1 si la base rechaza la operación (dato repetido, clave foránea, etc.).
+     */
+    public static function filasAfectadas(string $sql, array $params = []): int
+    {
+        $stmt = self::prepare($sql, $params);
+
         try {
-            $success = $stmt->execute();
+            $stmt->execute();
+            $filas = $stmt->affected_rows;
         } catch (mysqli_sql_exception $e) {
             error_log('Error SQL: ' . $e->getMessage());
-            $success = false;
+            $filas = -1;
         }
         $stmt->close();
 
-        return $success;
+        return (int)$filas;
     }
 
-    private static function prepare(string $sql, array $params = []): ?mysqli_stmt
+    private static function prepare(string $sql, array $params = []): mysqli_stmt
     {
         $statement = self::getConnection()->prepare($sql);
-        if ($statement === false) {
-            return null;
-        }
 
         if ($params !== []) {
             $types = str_repeat('s', count($params));

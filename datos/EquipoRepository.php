@@ -25,12 +25,24 @@ class EquipoRepository
 
     public function listarDisponibles(): array
     {
-        return Conexion::select("SELECT * FROM equipo WHERE estado = 'Disponible'");
+        return Conexion::select("SELECT * FROM equipo WHERE estado = 'Disponible' ORDER BY modelo");
     }
 
     public function cambiarEstado(int $idEquipo, string $estado): bool
     {
         return Conexion::execute('UPDATE equipo SET estado = ? WHERE id_equipo = ?', [$estado, $idEquipo]);
+    }
+
+    /**
+     * Pasa el equipo a "Prestado" solo si estaba "Disponible".
+     * Lo hace en una sola consulta, así dos préstamos simultáneos no pueden llevarse el mismo equipo.
+     */
+    public function marcarPrestadoSiDisponible(int $idEquipo): bool
+    {
+        return Conexion::filasAfectadas(
+            "UPDATE equipo SET estado = 'Prestado' WHERE id_equipo = ? AND estado = 'Disponible'",
+            [$idEquipo]
+        ) === 1;
     }
 
     public function obtenerEstado(int $idEquipo): ?string
