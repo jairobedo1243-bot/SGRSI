@@ -24,6 +24,9 @@ Es una aplicación PHP renderizada en el servidor: cada página `.php` procesa l
    GRANT SELECT, INSERT, UPDATE, DELETE ON BD_SGRSI.* TO 'sgrsi_app'@'localhost';
    ```
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 791e8a2 (Explica en el Readme cómo crear config/secreto.php sin usar una plantilla)
    Luego creá el archivo `config/secreto.php` con el mismo usuario y clave (y `DB_PORT` si tu MySQL no usa el puerto 3306). Ese archivo no se sube a GitHub:
    ```php
    <?php
@@ -31,9 +34,12 @@ Es una aplicación PHP renderizada en el servidor: cada página `.php` procesa l
    define('DB_PASS', 'TU_CLAVE_LARGA');
    // define('DB_PORT', 3306);
    ```
+<<<<<<< HEAD
 =======
    Luego copiá `config/secreto.ejemplo.php` como `config/secreto.php` y poné ahí el mismo usuario y clave (y `DB_PORT` si tu MySQL no usa el puerto 3306). Ese archivo no se sube a GitHub.
 >>>>>>> 070f80d (Reorganiza js e images dentro de public y deja el proyecto al día)
+=======
+>>>>>>> 791e8a2 (Explica en el Readme cómo crear config/secreto.php sin usar una plantilla)
    Además, en `C:\xampp\mysql\bin\my.ini` agregá `bind-address=127.0.0.1` bajo `[mysqld]` y reiniciá MySQL, para que solo se pueda entrar desde esta computadora.
 5. Configurá Apache para que el navegador solo pueda llegar a la carpeta `public/`. Abrí `C:\xampp\apache\conf\extra\httpd-vhosts.conf`, agregá al final este bloque (ajustá la ruta si tu carpeta tiene otro nombre) y reiniciá Apache desde el panel de XAMPP:
    ```apache
@@ -134,7 +140,12 @@ proyectorevision/
 │   └── UsuarioRepository.php, EquipoRepository.php, PrestamoRepository.php,
 │       TicketRepository.php, HistorialRepository.php
 ├── config/
+<<<<<<< HEAD
 │   └── config.php
+=======
+│   ├── config.php
+│   └── secreto.php             # credenciales (no se sube a GitHub, se crea a mano)
+>>>>>>> 791e8a2 (Explica en el Readme cómo crear config/secreto.php sin usar una plantilla)
 ├── sql/                        # BD_SGRSI.sql, reparar_passwords.sql
 ├── app/                        # versión anterior de algunas clases (las páginas no la usan)
 └── jairo/                      # Proyecto SQL Server alternativo
