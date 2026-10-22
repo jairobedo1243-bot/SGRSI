@@ -23,7 +23,13 @@ Es una aplicación PHP renderizada en el servidor: cada página `.php` procesa l
    CREATE USER 'sgrsi_app'@'localhost' IDENTIFIED BY 'TU_CLAVE_LARGA';
    GRANT SELECT, INSERT, UPDATE, DELETE ON BD_SGRSI.* TO 'sgrsi_app'@'localhost';
    ```
-   Luego copiá `config/secreto.ejemplo.php` como `config/secreto.php` y poné ahí el mismo usuario y clave (y `DB_PORT` si tu MySQL no usa el puerto 3306). Ese archivo no se sube a GitHub.
+   Luego creá el archivo `config/secreto.php` con el mismo usuario y clave (y `DB_PORT` si tu MySQL no usa el puerto 3306). Ese archivo no se sube a GitHub:
+   ```php
+   <?php
+   define('DB_USER', 'sgrsi_app');
+   define('DB_PASS', 'TU_CLAVE_LARGA');
+   // define('DB_PORT', 3306);
+   ```
    Además, en `C:\xampp\mysql\bin\my.ini` agregá `bind-address=127.0.0.1` bajo `[mysqld]` y reiniciá MySQL, para que solo se pueda entrar desde esta computadora.
 5. Configurá Apache para que el navegador solo pueda llegar a la carpeta `public/`. Abrí `C:\xampp\apache\conf\extra\httpd-vhosts.conf`, agregá al final este bloque (ajustá la ruta si tu carpeta tiene otro nombre) y reiniciá Apache desde el panel de XAMPP:
    ```apache
@@ -125,8 +131,7 @@ proyectorevision/
 │       TicketRepository.php, HistorialRepository.php
 ├── config/
 │   ├── config.php
-│   ├── secreto.php             # credenciales (no se sube a GitHub)
-│   └── secreto.ejemplo.php     # plantilla para crear secreto.php
+│   └── secreto.php             # credenciales (no se sube a GitHub, se crea a mano)
 ├── sql/                        # BD_SGRSI.sql, reparar_passwords.sql
 ├── app/                        # versión anterior de algunas clases (las páginas no la usan)
 └── jairo/                      # Proyecto SQL Server alternativo
