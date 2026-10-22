@@ -23,6 +23,7 @@ Es una aplicación PHP renderizada en el servidor: cada página `.php` procesa l
    CREATE USER 'sgrsi_app'@'localhost' IDENTIFIED BY 'TU_CLAVE_LARGA';
    GRANT SELECT, INSERT, UPDATE, DELETE ON BD_SGRSI.* TO 'sgrsi_app'@'localhost';
    ```
+<<<<<<< HEAD
    Luego creá el archivo `config/secreto.php` con el mismo usuario y clave (y `DB_PORT` si tu MySQL no usa el puerto 3306). Ese archivo no se sube a GitHub:
    ```php
    <?php
@@ -30,6 +31,9 @@ Es una aplicación PHP renderizada en el servidor: cada página `.php` procesa l
    define('DB_PASS', 'TU_CLAVE_LARGA');
    // define('DB_PORT', 3306);
    ```
+=======
+   Luego copiá `config/secreto.ejemplo.php` como `config/secreto.php` y poné ahí el mismo usuario y clave (y `DB_PORT` si tu MySQL no usa el puerto 3306). Ese archivo no se sube a GitHub.
+>>>>>>> 070f80d (Reorganiza js e images dentro de public y deja el proyecto al día)
    Además, en `C:\xampp\mysql\bin\my.ini` agregá `bind-address=127.0.0.1` bajo `[mysqld]` y reiniciá MySQL, para que solo se pueda entrar desde esta computadora.
 5. Configurá Apache para que el navegador solo pueda llegar a la carpeta `public/`. Abrí `C:\xampp\apache\conf\extra\httpd-vhosts.conf`, agregá al final este bloque (ajustá la ruta si tu carpeta tiene otro nombre) y reiniciá Apache desde el panel de XAMPP:
    ```apache
@@ -156,8 +160,11 @@ proyectorevision/
 - La baja de usuarios es **lógica** (RF-06 / RN-10): "Dar de baja" pone `usuario.activo = 0`. El usuario no puede iniciar sesión, deja de aparecer en las listas y, si tenía la sesión abierta, se le cierra. Sus préstamos, tickets y servicios se conservan con su nombre (marcado "dado de baja"), y las claves foráneas mantienen la integridad referencial. Un administrador no puede darse de baja a sí mismo. No hay función de reactivación en esta versión; la cédula y el correo de un usuario dado de baja no se pueden reutilizar.
 - Las contraseñas se guardan con hash bcrypt, nunca en texto plano.
 - El formulario de préstamos solo ofrece equipos con estado `Disponible`; al prestar, el equipo pasa a `Prestado`, y al devolverlo vuelve a `Disponible`.
-- Solo Administrador y Técnico pueden cerrar tickets; solo Administrador gestiona usuarios.
+- Solo Administrador y Técnico pueden cerrar tickets y registrar devoluciones; solo Administrador gestiona usuarios.
+- Un Solicitante solo ve sus propios préstamos y tickets, y los registra siempre a su nombre; el personal (Administrador y Técnico) ve todos y elige el solicitante.
+- La fecha de devolución de un préstamo no puede ser anterior a hoy (hora de Uruguay).
 
+<<<<<<< HEAD
 ## Pendientes conocidos
 
 <<<<<<< HEAD
@@ -175,6 +182,27 @@ proyectorevision/
 - Las credenciales de MySQL están escritas en `app/Database.php`.
 - Borrar `generar_hash.php` y los usuarios de prueba del login antes de publicar.
 >>>>>>> cd9f9a295c82d8e371ccd90713e4be150cbbab5b
+=======
+## Seguridad
+
+- **Solo `public/` es accesible desde el navegador**, gracias al `DocumentRoot` de Apache (paso 5 de la instalación).
+- **Segunda barrera:** cada archivo de `config/`, `negocio/`, `datos/` e `includes/` empieza con `defined('ENTRYPOINT') || (http_response_code(404) && exit);`. Si alguien lo abre directo, responde 404; solo funciona cuando lo carga `bootstrap.php`.
+- **Consultas preparadas** (`?` + `bind_param`) en `datos/Conexion.php`, contra inyección SQL.
+- **Contraseñas con bcrypt** (`password_hash` / `password_verify`); en la sesión nunca se guarda el hash.
+- **Login:** token CSRF, bloqueo de 10 minutos tras 5 intentos fallidos, espera de 0,4 s por intento fallido y `session_regenerate_id` al entrar. La cookie de sesión es `httponly` y `samesite=Lax`.
+- **CSRF:** todos los formularios (incluido el login) llevan un token oculto (`csrf_campo()` / `csrf_valido()`).
+- **F5 seguro:** después de cada formulario la página redirige (POST → redirección → GET) y muestra el mensaje una sola vez, así recargar no duplica tickets ni préstamos.
+- **XSS:** todo lo que se muestra en pantalla pasa por `e()` (`htmlspecialchars`).
+- **Errores:** no se muestran en pantalla (`display_errors = 0`). Si la base no responde, se muestra una página de error clara y el detalle queda en `C:\xampp\apache\logs\error.log`.
+
+## Pendientes conocidos
+
+- En una base instalada antes de la baja lógica, abrir una vez `migrar.php`, ingresar con un Administrador y apretar **Aplicar** (en la PC y en el servidor). Hasta hacerlo, el sistema muestra un aviso que lleva a esa página. El usuario de MySQL necesita permisos `ALTER` y `REFERENCES`. Después se puede borrar `public/migrar.php`.
+- Borrar `public/generar_hash.php` y los usuarios de prueba antes de publicar.
+- Usar en `config/secreto.php` un usuario propio de MySQL en lugar de `root` (paso 4 de la instalación).
+- Si aparece la página "No se pudo trabajar con la base de datos", el motivo exacto está en `C:\xampp\apache\logs\error.log`. Si pasa después de cambiar el esquema, volvé a importar `sql/BD_SGRSI.sql`.
+- La carpeta `app/` es una versión anterior que las páginas no usan; se puede borrar.
+>>>>>>> 070f80d (Reorganiza js e images dentro de public y deja el proyecto al día)
 
 ## Equipo de desarrollo
 
